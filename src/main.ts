@@ -11,6 +11,6 @@ async function bootstrap() {
       transform: true, // Make sure the request data is an instance of the DTO
     }),
   );
-  await app.listen(3000);
+  await app.listen(8100);
 }
 bootstrap();

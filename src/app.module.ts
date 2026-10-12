@@ -1,23 +1,25 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './users/user.module';
-import { ProductModule } from './product/product.module';
-import { CartModule } from './cart/cart.module';
-import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './modules/auth/auth.module';
+import { CartModule } from './modules/cart/cart.module';
+import { UserModule } from './modules/users/users.module';
+import { ProfileModule } from './modules/profile/profile.module';
+import { ProductModule } from './modules/products/products.module';
 
 @Module({
   imports: [
-    UserModule,
-    ProductModule,
-    CartModule,
     AuthModule,
+    UserModule,
+    CartModule,
+    ProductModule,
+    ProfileModule,
     TypeOrmModule.forRootAsync({
       imports: [],
       inject: [],
       useFactory: () => ({
         type: 'postgres',
-        entities: [],
-        synchronize: process.env.NODE_ENV === 'development',
+        autoLoadEntities: true,
+        synchronize: true, //process.env.NODE_ENV === 'development',
         host: 'localhost',
         port: 5432,
         username: 'postgres',
@@ -27,6 +29,5 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule {}
