@@ -3,12 +3,16 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsStrongPassword,
   MaxLength,
-  MinLength,
 } from 'class-validator';
-import { CreateProfileDto } from 'src/modules/profile/dto/create-profile.dto';
 
 export class CreateUserDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  name: string | null;
+
   @IsString()
   @IsNotEmpty()
   @IsEmail()
@@ -16,14 +20,12 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  @MaxLength(24)
-  username: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
+  @IsStrongPassword({
+    minLength: 6,
+    minLowercase: 1,
+    minNumbers: 1,
+    minSymbols: 1,
+    minUppercase: 1,
+  })
   password: string;
-
-  @IsOptional()
-  profile?: CreateProfileDto | null;
 }

@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { LoggingMiddleware } from './middleware/logging/logging.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(new LoggingMiddleware().use);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Only apply those properties defined in DTO

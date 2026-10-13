@@ -3,8 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { CartModule } from './modules/cart/cart.module';
 import { UserModule } from './modules/users/users.module';
-import { ProfileModule } from './modules/profile/profile.module';
 import { ProductModule } from './modules/products/products.module';
+import { User } from './modules/users/entities/user.entity';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -12,13 +14,12 @@ import { ProductModule } from './modules/products/products.module';
     UserModule,
     CartModule,
     ProductModule,
-    ProfileModule,
     TypeOrmModule.forRootAsync({
       imports: [],
       inject: [],
       useFactory: () => ({
         type: 'postgres',
-        autoLoadEntities: true,
+        entities: [User],
         synchronize: true, //process.env.NODE_ENV === 'development',
         host: 'localhost',
         port: 5432,
@@ -27,6 +28,12 @@ import { ProductModule } from './modules/products/products.module';
         database: 'nestjs-ecommerce',
       }),
     }),
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
   controllers: [],
 })

@@ -1,17 +1,23 @@
 import { Exclude } from 'class-transformer';
 import { CoreEntity } from 'src/entities/core.entity';
-import { Profile } from 'src/modules/profile/entities/profile.entity';
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity } from 'typeorm';
+
+export type Role = 'customer' | 'staff' | 'admin';
 
 @Entity({ name: 'users' })
 export class User extends CoreEntity {
+  constructor(partial: Partial<User>) {
+    super();
+    Object.assign(this, partial);
+  }
+
   @Column({
     type: 'varchar',
-    nullable: false,
-    length: 24,
-    unique: true,
+    nullable: true,
+    length: 100,
+    default: null,
   })
-  username: string;
+  name: string | null;
 
   @Column({
     type: 'varchar',
@@ -25,10 +31,15 @@ export class User extends CoreEntity {
     type: 'varchar',
     nullable: false,
     length: 100,
+    name: 'hashed_password',
   })
   @Exclude()
-  password: string;
+  hashedPassword: string;
 
-  @OneToOne(() => Profile, (profile) => profile.user, { cascade: true })
-  profile?: Profile | null;
+  @Column({
+    type: 'varchar',
+    array: true,
+    default: ['customer'],
+  })
+  roles: Role[];
 }
