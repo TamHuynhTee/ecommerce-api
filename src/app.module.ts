@@ -7,6 +7,7 @@ import { ProductModule } from './modules/products/products.module';
 import { User } from './modules/users/entities/user.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -14,18 +15,21 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     UserModule,
     CartModule,
     ProductModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRootAsync({
-      imports: [],
-      inject: [],
-      useFactory: () => ({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
         type: 'postgres',
         entities: [User],
-        synchronize: true, //process.env.NODE_ENV === 'development',
-        host: 'localhost',
-        port: 5432,
-        username: 'postgres',
-        password: '123456',
-        database: 'nestjs-ecommerce',
+        synchronize: config.get('NODE_ENV') === 'development',
+        host: config.get('DB_HOST'),
+        port: config.get('DB_PORT'),
+        username: config.get('DB_USER'),
+        password: config.get('DB_PASSWORD'),
+        database: config.get('DB_NAME'),
       }),
     }),
   ],
