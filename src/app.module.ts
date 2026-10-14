@@ -8,6 +8,9 @@ import { User } from './modules/users/entities/user.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Product } from './modules/products/entities/product.entity';
+import { ProductVariant } from './modules/products/entities/product-variant.entity';
+import { CartItem } from './modules/cart/entities/cart-item.entity';
 
 @Module({
   imports: [
@@ -23,7 +26,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        entities: [User],
+        entities: [User, Product, ProductVariant, CartItem],
         synchronize: config.get('NODE_ENV') === 'development',
         host: config.get('DB_HOST'),
         port: config.get('DB_PORT'),
