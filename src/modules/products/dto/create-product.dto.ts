@@ -7,31 +7,32 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   MaxLength,
   ValidateNested,
 } from 'class-validator';
-import { ProductStatus } from '../entities/product.entity';
+import { ProductStatus } from '../entities/product/product.entity';
 import { CreateProductVariantDto } from './create-product-variant.dto';
 
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(200)
+  @MaxLength(100)
   name: string;
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: string | null;
 
   @IsString()
   @IsNotEmpty()
-  @MaxLength(220)
+  @MaxLength(150)
   slug: string;
 
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  brand?: string;
+  brand: string | null;
 
   @IsEnum(ProductStatus)
   @IsOptional()
@@ -41,6 +42,9 @@ export class CreateProductDto {
   @IsOptional()
   @MaxLength(500)
   thumbnailUrl?: string;
+
+  @IsUUID()
+  categoryId: string;
 
   @IsBoolean()
   @IsOptional()

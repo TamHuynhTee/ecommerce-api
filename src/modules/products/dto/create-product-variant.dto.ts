@@ -1,15 +1,18 @@
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
+  IsISO4217CurrencyCode,
   IsNotEmpty,
-  IsNumber,
   IsObject,
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
   MaxLength,
   Min,
 } from 'class-validator';
+import { ERROR_CODE } from 'src/common/constants/error-code';
 
 export class CreateProductVariantDto {
   @IsString()
@@ -32,14 +35,22 @@ export class CreateProductVariantDto {
   @MaxLength(50)
   size?: string;
 
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  price: number;
+  @Matches(/^\d+$/, {
+    message: ERROR_CODE.INVALID_NUMBER,
+  })
+  unitPrice: string;
 
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
+  @Matches(/^\d+$/, {
+    message: ERROR_CODE.INVALID_NUMBER,
+  })
   @IsOptional()
-  compareAtPrice?: number;
+  originalPrice: string | null;
+
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
+  @IsISO4217CurrencyCode({ message: ERROR_CODE.INVALID_CURRENCY })
+  currency: string;
 
   @IsInt()
   @Min(0)
@@ -53,7 +64,7 @@ export class CreateProductVariantDto {
 
   @IsObject()
   @IsOptional()
-  attributes?: Record<string, string>;
+  attributes?: Record<string, unknown>;
 
   @IsBoolean()
   @IsOptional()

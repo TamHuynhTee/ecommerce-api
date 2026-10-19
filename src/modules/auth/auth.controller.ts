@@ -24,9 +24,7 @@ export class AuthController {
   @Public()
   @Post('sign-up')
   async signup(@Body() body: SignupDto): Promise<User> {
-    // Call create user
-    const name = null;
-    return this.userService.create({ ...body, name });
+    return this.userService.create(body);
   }
 
   @UseGuards(LocalAuthGuard)

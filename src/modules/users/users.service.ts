@@ -1,9 +1,12 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
-import { ERROR_CODE } from 'src/common/constants/error-code';
+import { QueryFailedError, Repository } from 'typeorm';
+import {
+  ERROR_CODE,
+  POSTGRES_ERROR_CODE,
+} from 'src/common/constants/error-code';
 import { CredentialService } from '../auth/credential.service';
 
 @Injectable()
@@ -15,25 +18,34 @@ export class UserService {
   ) {}
 
   async create(data: CreateUserDto): Promise<User> {
-    const exist = await this.userRepo.existsBy({
-      email: data.email,
-    });
+    // const existingUser = await this.userRepo.findOne({
+    //   where: [{ email: data.email }, { username: data.username }],
+    // });
 
-    if (exist) {
-      throw new ConflictException(ERROR_CODE.EMAIL_EXIST);
-    }
+    // if (existingUser) {
+    //   throw new ConflictException(ERROR_CODE.EMAIL_OR_USERNAME_EXIST);
+    // }
 
     try {
       const hashedPassword = await this.credentialService.hash(data.password);
-      const newUser = this.userRepo.create({
-        email: data.email,
-        name: data.name,
+      const user = this.userRepo.create({
+        ...data,
         hashedPassword,
       });
 
-      return new User(await this.userRepo.save(newUser));
-    } catch (e) {
-      throw e;
+      return new User(await this.userRepo.save(user));
+    } catch (error) {
+      // Handle concurrent create request error
+      if (
+        error instanceof QueryFailedError &&
+        error?.driverError?.code === POSTGRES_ERROR_CODE.UNIQUE_VIOLATION
+      ) {
+        throw new ConflictException(ERROR_CODE.EMAIL_OR_USERNAME_EXIST);
+      }
+
+      Logger.error(error);
+
+      throw error;
     }
   }
 

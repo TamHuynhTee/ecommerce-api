@@ -1,26 +1,12 @@
-import {
-  CreateDateColumn,
-  DeleteDateColumn,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { PrimaryGeneratedColumn } from 'typeorm';
+import { SoftDeleteTimestamp, Timestamp } from './timestamp.entity';
 
-export abstract class CoreEntity {
+export abstract class CoreEntity extends Timestamp {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+}
 
-  @CreateDateColumn({
-    name: 'created_at',
-  })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    name: 'updated_at',
-  })
-  updatedAt: Date;
-
-  @DeleteDateColumn({
-    name: 'deleted_at',
-  })
-  deletedAt: Date;
+export abstract class CoreSoftDeleteEntity extends SoftDeleteTimestamp {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 }

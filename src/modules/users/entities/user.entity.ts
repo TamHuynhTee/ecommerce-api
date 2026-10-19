@@ -1,11 +1,18 @@
 import { Exclude } from 'class-transformer';
-import { CoreEntity } from 'src/entities/core.entity';
-import { Column, Entity } from 'typeorm';
+import { CoreSoftDeleteEntity } from 'src/entities/core.entity';
+import { CartItem } from 'src/modules/cart/entities/cart-item.entity';
+import { OrderDetail } from 'src/modules/order/entities/order.entity';
+import { Column, Entity, OneToMany, Unique } from 'typeorm';
+import { Address } from './address.entity';
+import { Wishlist } from './wishlist.entity';
 
-export type Role = 'customer' | 'staff' | 'admin';
+export const UNIQUE_USERNAME_CONSTRAINT = 'u_username_constraint';
+export const UNIQUE_EMAIL_CONSTRAINT = 'uq_email_constraint';
 
 @Entity({ name: 'users' })
-export class User extends CoreEntity {
+@Unique(UNIQUE_USERNAME_CONSTRAINT, ['username'])
+@Unique(UNIQUE_EMAIL_CONSTRAINT, ['email'])
+export class User extends CoreSoftDeleteEntity {
   constructor(partial: Partial<User>) {
     super();
     Object.assign(this, partial);
@@ -13,17 +20,38 @@ export class User extends CoreEntity {
 
   @Column({
     type: 'varchar',
+    length: 500,
     nullable: true,
-    length: 100,
-    default: null,
   })
-  name: string | null;
+  avatar: string | null;
 
   @Column({
     type: 'varchar',
-    nullable: false,
     length: 100,
-    unique: true,
+    nullable: true,
+    name: 'first_name',
+  })
+  firstName: string | null;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'last_name',
+  })
+  lastName: string | null;
+
+  @Column({
+    type: 'varchar',
+    length: 24,
+    nullable: false,
+  })
+  username: string;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: false,
   })
   email: string;
 
@@ -37,9 +65,29 @@ export class User extends CoreEntity {
   hashedPassword: string;
 
   @Column({
-    type: 'varchar',
-    array: true,
-    default: ['customer'],
+    type: 'date',
+    nullable: true,
+    name: 'date_of_birth',
   })
-  roles: Role[];
+  dateOfBirth: string | null;
+
+  @OneToMany(() => Address, (a) => a.user, {
+    cascade: ['insert', 'update'],
+  })
+  addresses: Address[];
+
+  @OneToMany(() => Wishlist, (a) => a.user, {
+    cascade: ['insert', 'update'],
+  })
+  wishlists: Wishlist[];
+
+  @OneToMany(() => OrderDetail, (a) => a.user, {
+    cascade: ['insert', 'update'],
+  })
+  orders: OrderDetail[];
+
+  @OneToMany(() => CartItem, (c) => c.user, {
+    cascade: ['insert', 'update', 'remove'],
+  })
+  cart: CartItem[];
 }

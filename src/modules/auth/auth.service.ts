@@ -3,6 +3,7 @@ import { UserService } from '../users/users.service';
 import { CredentialService } from './credential.service';
 import { User } from '../users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from 'src/common/interfaces';
 
 @Injectable()
 export class AuthService {
@@ -24,10 +25,13 @@ export class AuthService {
   }
 
   async login(user: User) {
-    const payload = {
+    const payload: JwtPayload = {
       user: {
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        avatar: user.avatar,
       },
       sub: user.id,
     };
