@@ -1,13 +1,17 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { QueryFailedError, Repository } from 'typeorm';
 import {
   ERROR_CODE,
   POSTGRES_ERROR_CODE,
 } from 'src/common/constants/error-code';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CredentialService } from '../auth/credential.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import {
+  UNIQUE_EMAIL_CONSTRAINT,
+  UNIQUE_USERNAME_CONSTRAINT,
+  User,
+} from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -18,14 +22,6 @@ export class UserService {
   ) {}
 
   async create(data: CreateUserDto): Promise<User> {
-    // const existingUser = await this.userRepo.findOne({
-    //   where: [{ email: data.email }, { username: data.username }],
-    // });
-
-    // if (existingUser) {
-    //   throw new ConflictException(ERROR_CODE.EMAIL_OR_USERNAME_EXIST);
-    // }
-
     try {
       const hashedPassword = await this.credentialService.hash(data.password);
       const user = this.userRepo.create({
@@ -40,10 +36,16 @@ export class UserService {
         error instanceof QueryFailedError &&
         error?.driverError?.code === POSTGRES_ERROR_CODE.UNIQUE_VIOLATION
       ) {
+        const constraint = error.driverError?.constraint;
+
+        if (constraint === UNIQUE_USERNAME_CONSTRAINT)
+          throw new ConflictException(ERROR_CODE.USERNAME_EXISTED);
+
+        if (constraint === UNIQUE_EMAIL_CONSTRAINT)
+          throw new ConflictException(ERROR_CODE.EMAIL_EXISTED);
+
         throw new ConflictException(ERROR_CODE.EMAIL_OR_USERNAME_EXIST);
       }
-
-      Logger.error(error);
 
       throw error;
     }
