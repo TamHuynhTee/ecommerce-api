@@ -6,7 +6,7 @@ import { Column, Entity, OneToMany, Unique } from 'typeorm';
 import { Address } from './address.entity';
 import { Wishlist } from './wishlist.entity';
 
-export const UNIQUE_USERNAME_CONSTRAINT = 'u_username_constraint';
+export const UNIQUE_USERNAME_CONSTRAINT = 'uq_username_constraint';
 export const UNIQUE_EMAIL_CONSTRAINT = 'uq_email_constraint';
 
 @Entity({ name: 'users' })
